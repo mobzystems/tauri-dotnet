@@ -5,6 +5,7 @@ let currentUrl: string | undefined = undefined;
 
 export interface ServiceState {
     state: 'started' | 'running' | 'exited' | 'error';
+    startupLine?: string;
 }
 
 export default function useBackendService(props: {
@@ -12,7 +13,7 @@ export default function useBackendService(props: {
     verbose: boolean,
     startupMessage?: RegExp
 }) {
-    const [isRunning, setIsRunning] = useState<ServiceState>();
+    const [serviceState, setServiceState] = useState<ServiceState>();
     const [command, setCommand] = useState<Command>();
     const [process, setProcess] = useState<Child>();
 
@@ -30,12 +31,12 @@ export default function useBackendService(props: {
         // Helper function to sleep
         const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
         // Flag signalling process responded
-        let ready: boolean;
+        let startupLine: string | undefined;
         let exited: boolean;
 
         const onClose = (data: any) => {
             log(`command finished with code ${data.code} and signal ${data.signal}`);
-            setIsRunning({ state: 'exited' });
+            setServiceState({ state: 'exited' });
             exited = true;
         };
         const onError = (error: any) => {
@@ -44,7 +45,7 @@ export default function useBackendService(props: {
         const onStdOut = (line: string) => {
             log(`command stdout: "${line.trim()}"`);
             if (startupMessage.test(line)) {
-                ready = true;
+                startupLine = line;
             }
         }
         const onStdErr = (line: string) => {
@@ -88,7 +89,7 @@ export default function useBackendService(props: {
                         _command.stdout.on('data', onStdOut);
                         _command.stderr.on('data', onStdErr);
 
-                        ready = false;
+                        startupLine = undefined;
                         exited = false;
 
                         const _process = await _command.spawn();
@@ -96,15 +97,15 @@ export default function useBackendService(props: {
                         setCommand(_command);
                         setProcess(_process);
 
-                        setIsRunning({ state: 'started'});
+                        setServiceState({ state: 'started'});
 
                         log(`process #${_process.pid} started`);
 
                         log(`waiting for startup message ${startupMessage}...`);
                         for (let i = 1; i <= 10; i++) {
-                            if (ready) {
+                            if (startupLine !== undefined) {
                                 log(`message found (#${i})`);
-                                return { state: 'running' };
+                                return { state: 'running', startupLine: startupLine };
                             }
                             if (exited)
                                 break;
@@ -129,7 +130,7 @@ export default function useBackendService(props: {
                     }
 
                 })(props.url)
-                    .then(state => setIsRunning(state));
+                    .then(state => setServiceState(state));
             }
         } else {
             currentUrl = undefined;
@@ -138,5 +139,5 @@ export default function useBackendService(props: {
 
     }, [props.url]);
 
-    return isRunning;
+    return serviceState;
 }
