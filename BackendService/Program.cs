@@ -1,4 +1,6 @@
 // Set the current directory so we an find appSettings.json
+using Microsoft.AspNetCore.Mvc;
+
 Environment.CurrentDirectory = AppContext.BaseDirectory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,5 +25,11 @@ app.UseCors();
 app.MapGet("/", () => $"It is {DateTime.Now:d MMM yyyy, HH:mm:ss} (GET)");
 // Set up POST to /
 app.MapPost("/", () => $"It is {DateTime.Now:d MMM yyyy, HH:mm:ss} (POST)");
-
+// Set up post to /greet
+app.MapPost("/greet", ([FromBody] GreetModel name) => $"Hello there, {name.Name}! It is {DateTime.Now:d MMM yyyy, HH:mm:ss}.");
 app.Run();
+
+class GreetModel
+{
+  public string? Name { get; set; }
+}
