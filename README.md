@@ -1,4 +1,4 @@
-# DepGraph
+# tauridotnet
 
 This project combines a React front-end with a .NET back-end using Tauri.
 
@@ -77,3 +77,8 @@ This will ensure that the services directory is copied to where the app is execu
 This will allow the Mac to run services/BackendService and Windows to run services/BackendService.exe.
 
 NOTE: BackendServices(.exe) is the name of the .NET back-end service. There should also be a BackendService.dll.
+
+## Starting the backed service
+
+See `App.tsx` for a way to start the backend service using `useBackendService.tsx`. If the backend URL is the empty string
+the backend will choose its own port number which can be found in the `startupLine`.

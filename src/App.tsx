@@ -6,10 +6,10 @@ function App() {
   const [url, setUrl] = useState<string | undefined>('');
   const serviceState = useBackendService({
     url: url,
-    verbose: true,
-    startupMessage: /Now listening on:/
+    // verbose: true,
+    // startupMessage: /Now listening on:/
   });
-  // This is the actual URL the backend started on if we specified 127.0.0.1:0
+  // This is the actual URL the backend started on if we specified a URL of ''
   const [startedUrl, setStartedUrl] = useState<string>();
 
   useEffect(() => {

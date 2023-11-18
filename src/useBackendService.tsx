@@ -13,7 +13,7 @@ export interface ServiceState {
 
 export default function useBackendService(props: {
     url?: string,
-    verbose: boolean,
+    verbose?: boolean,
     startupMessage?: RegExp
 }) {
     const [serviceState, setServiceState] = useState<ServiceState>();
