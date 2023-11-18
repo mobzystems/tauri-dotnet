@@ -13,6 +13,7 @@ export default function Greet(props: { url: string }) {
 
     return (<>
         <h1>Welcome to Tauri-DotNet!</h1>
+        <p>Running on {props.url}</p>
 
         <form
           className="row"

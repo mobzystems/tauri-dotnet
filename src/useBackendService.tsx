@@ -3,6 +3,9 @@ import { Child, Command } from "@tauri-apps/api/shell";
 
 let currentUrl: string | undefined = undefined;
 
+// When the backend is started on this URL, it will choose a port automatically
+const AUTOMATIC_URL = 'http://127.0.0.1:0';
+
 export interface ServiceState {
     state: 'started' | 'running' | 'exited' | 'error';
     startupLine?: string;
@@ -128,8 +131,7 @@ export default function useBackendService(props: {
                         currentUrl = undefined;
                         return { state: 'error' };
                     }
-
-                })(props.url)
+                })(props.url === '' ? AUTOMATIC_URL : props.url) // Use 127.0.0.1:0 if url is ''
                     .then(state => setServiceState(state));
             }
         } else {

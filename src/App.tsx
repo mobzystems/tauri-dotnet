@@ -3,45 +3,65 @@ import Greet from "./Greet.tsx";
 import useBackendService from "./useBackendService.tsx";
 
 function App() {
-  const [url, setUrl] = useState<string | undefined>('http://localhost:50153');
+  const [url, setUrl] = useState<string | undefined>('');
   const serviceState = useBackendService({
     url: url,
     verbose: true,
-    // startupMessage: /Now listening on/
+    startupMessage: /Now listening on:/
   });
+  // This is the actual URL the backend started on if we specified 127.0.0.1:0
+  const [startedUrl, setStartedUrl] = useState<string>();
 
   useEffect(() => {
     if (serviceState === undefined) {
       console.log("App: backend service state not set");
     } else {
       console.log(`App: backend service state is ${serviceState.state}`);
-      if (serviceState.state === 'running') {
-        fetch(url!).then(r => r.text()).then(t => console.log(`Backend says: '${t}'`))
+      switch (serviceState.state) {
+        case 'running':
+          setStartedUrl(serviceState.startupLine!.trim().substring(17));
+          break;
+        default:
+          setStartedUrl(undefined);
+          break;
       }
     }
   }, [serviceState]);
 
-  if (serviceState === undefined) {
-    return <p>Starting...</p>
-  } else {
-    return (<>
-      <p>Backend is state is {serviceState.state}</p>
-      {serviceState.state === 'running' && url !== undefined &&
+  useEffect(() => {
+    if (startedUrl !== undefined)
+      fetch(startedUrl).then(r => r.text()).then(t => console.log(`Backend says: '${t}'`));
+  }, [startedUrl]);
+
+  function BackendServiceStatus() {
+    return (<div style={{ backgroundColor: 'lightgray', padding: '1rem' }}>
+      {serviceState === undefined
+        ?
+        <p>Starting...</p>
+        :
         <>
-          <Greet url={url} />
+          <p>Backend is state is {serviceState.state}</p>
           {serviceState.startupLine !== undefined &&
             <p>Startup line was {serviceState.startupLine}</p>
           }
+          <button onClick={() => setUrl('http://localhost:1420')}>1420</button>
+          <button onClick={() => setUrl('http://localhost:5000')}>5000</button>
+          <button onClick={() => setUrl('http://localhost:5010')}>5010</button>
+          <button onClick={() => setUrl('http://localhost:50153')}>50153</button>
+          <button onClick={() => setUrl('')}>Auto</button>
+          <button onClick={() => setUrl(undefined)}>Stop</button>
+          <p>URL is {url}</p>
         </>
       }
-      <button onClick={() => setUrl('http://localhost:1420')}>1420</button>
-      <button onClick={() => setUrl('http://localhost:5000')}>5000</button>
-      <button onClick={() => setUrl('http://localhost:5010')}>5010</button>
-      <button onClick={() => setUrl('http://localhost:50153')}>50153</button>
-      <button onClick={() => setUrl(undefined)}>Stop</button>
-      <p>URL is {url}</p>
-    </>);
+    </div>);
   }
+
+  return (<>
+    {startedUrl !== undefined &&
+      <Greet url={startedUrl} />
+    }
+    <BackendServiceStatus />    
+  </>);
 }
 
 export default App;
