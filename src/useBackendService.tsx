@@ -1,10 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Child, Command } from "@tauri-apps/api/shell";
-
-let currentUrl: string | undefined = undefined;
-
-// When the backend is started on this URL, it will choose a port automatically
-const AUTOMATIC_URL = 'http://127.0.0.1:0';
 
 export interface ServiceState {
     state: 'started' | 'running' | 'exited' | 'error';
@@ -23,13 +18,20 @@ export default function useBackendService(props: {
     const startupMessage = props.startupMessage || /Now listening on:/;
     const verbose = props.verbose || false;
 
+    // The current URL we're trying to start. Used to prevent the backend
+    // from being started multiple times in strict mode
+    const tryUrl = useRef<string>();
+    
     const log = (message: string) => {
         if (verbose)
             console.log(`BackendService: ${message}`)
     }
 
+    // When the backend is started on this URL, it will choose a port automatically
+    const AUTOMATIC_URL = 'http://127.0.0.1:0';
+
     useEffect(() => {
-        log(`props.url is '${props.url}', current url is '${currentUrl}'`);
+        log(`props.url is '${props.url}', current url is '${tryUrl.current}'`);
 
         // Helper function to sleep
         const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -75,11 +77,11 @@ export default function useBackendService(props: {
         }
 
         if (props.url !== undefined) {
-            if (props.url === currentUrl) {
+            if (props.url === tryUrl.current) {
                 log(`skip duplicate URL`);
             } else {
                 // Set the current url so we don't start twice in Strict mode
-                currentUrl = props.url;
+                tryUrl.current = props.url;
                 (async function (url: string): Promise<ServiceState> {
                     try {
                         await killProcessIfStarted(command, process);
@@ -122,20 +124,20 @@ export default function useBackendService(props: {
                             setProcess(undefined);
                         } else
                             await killProcessIfStarted(_command, _process);
-                        currentUrl = undefined;
+                        tryUrl.current = undefined;
                         return { state: 'error' };
 
                     }
                     catch (error: any) {
                         log(`failed to start process: '${error}'`);
-                        currentUrl = undefined;
+                        tryUrl.current = undefined;
                         return { state: 'error' };
                     }
                 })(props.url === '' ? AUTOMATIC_URL : props.url) // Use 127.0.0.1:0 if url is ''
                     .then(state => setServiceState(state));
             }
         } else {
-            currentUrl = undefined;
+            tryUrl.current = undefined;
             killProcessIfStarted(command, process);
         }
 
