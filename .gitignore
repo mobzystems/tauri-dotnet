@@ -20,10 +20,12 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
+# Do NOT skip solution files *.sln
 *.sw?
 
+.vs/
 BackendService/.vs/
+BackendService/**/*.user
 BackendService/bin/
 BackendService/obj/
 src-tauri/services/

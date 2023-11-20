@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OutDir>..\src-tauri\services</OutDir>
     <PublishDir>..\src-tauri\services</PublishDir>
     <AssemblyName>BackendService</AssemblyName>
+    <PublishAot>false</PublishAot>
   </PropertyGroup>
 </Project>

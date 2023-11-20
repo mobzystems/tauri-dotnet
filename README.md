@@ -82,3 +82,13 @@ NOTE: BackendServices(.exe) is the name of the .NET back-end service. There shou
 
 See `App.tsx` for a way to start the backend service using `useBackendService.tsx`. If the backend URL is the empty string
 the backend will choose its own port number which can be found in the `startupLine`.
+
+## Publishing the backend using a profile
+
+The default `dotnet publish` command will publish a framework dependent version of the backend. To change that,
+create a publish profile (name it 'PublishProfile') and change `beforeBuildCommand` command to
+
+`dotnet build /p:DeployOnBuild=true /p:PublishProfile=PublishProfile`
+
+You can create multiple publish profiles but only the one specified in the `beforeBuildCommand` will be used
+when running `npm run tauri build`.
