@@ -8,11 +8,11 @@ function App() {
   const serviceState = useBackendService({
     url: url,
     // Set this to true to see more information in the Console
-    // verbose: true,
-    
+    verbose: true,
+
     // startupMessage: /Now listening on:/, // The default
     // startupMessage: undefined, // Also the default
-    
+
     // Expect the backend to supply the startup message within x ms. Set to undefined to skip the running check
     timeout: 3000
   });
@@ -24,6 +24,7 @@ function App() {
   useEffect(() => {
     if (serviceState === undefined) {
       console.log("App: backend service state not set");
+      setStartedUrl(undefined);
     } else {
       console.log(`App: backend service state is '${serviceState.state}'`);
       switch (serviceState.state) {
@@ -68,12 +69,16 @@ function App() {
           {serviceState.startupLine !== undefined &&
             <p>Startup line was '<strong>{serviceState.startupLine}</strong>'</p>
           }
-          <button onClick={() => setUrl('http://localhost:1420')}>1420</button>
-          <button onClick={() => setUrl('http://localhost:5000')}>5000</button>
-          <button onClick={() => setUrl('http://localhost:5010')}>5010</button>
-          <button onClick={() => setUrl('http://localhost:50153')}>50153</button>
-          <button onClick={() => setUrl('')}>Auto</button>
-          <button onClick={() => setUrl(undefined)}>Stop</button>
+          {(serviceState.state === 'started' || serviceState.state === 'running')
+            ? <>
+              <button onClick={() => setUrl(undefined)}>Stop</button>
+            </> : <>
+              <button onClick={() => setUrl('http://localhost:1420')}>1420</button>
+              <button onClick={() => setUrl('http://localhost:5000')}>5000</button>
+              <button onClick={() => setUrl('http://localhost:5010')}>5010</button>
+              <button onClick={() => setUrl('http://localhost:50153')}>50153</button>
+              <button onClick={() => setUrl('')}>Auto</button>
+            </>}
           <p>URL is <strong>{url === '' ? '(automatic)' : url}</strong></p>
           {homeResponse !== undefined && <p>Backend 'GET /' returned '<strong>{homeResponse}</strong>'</p>}
         </>
