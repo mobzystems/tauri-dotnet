@@ -3,7 +3,7 @@ import { Child, Command } from "@tauri-apps/api/shell";
 
 export interface ServiceState {
     state: 'started' | 'running' | 'exited' | 'error' | 'stopped';
-    startupLine?: string;
+    url?: string;
 }
 
 export default function useBackendService(props: {
@@ -14,7 +14,7 @@ export default function useBackendService(props: {
 }) {
     const [serviceState, setServiceState] = useState<ServiceState>();
 
-    const startupMessage = props.startupMessage || /Now listening on:/;
+    const startupMessage = props.startupMessage || /\bNow listening on:\s+(https?:\/\/\S+)/;
     const verbose = props.verbose || false;
 
     // The current URL we're trying to start. Used to prevent the backend
@@ -74,15 +74,17 @@ export default function useBackendService(props: {
         }
         const onStdOut = (line: string) => {
             log(`Command stdout: "${line.trim()}"`);
-            if (startupMessage.test(line)) {
+            const m = line.match(startupMessage);
+            if (m !== null) {
                 log(`Found startup line '${line.trimEnd()}'`);
+                const msg = m.length === 1 ? line.trim() : m[1];
                 // Cancel the timeout
                 // console.log(`Startup timer was #${startupTimer.current}`);
                 if (startupTimer.current !== undefined) {
                     clearTimerIfSet();
                     setServiceState((prevState) => {
                         if (prevState?.state === 'started')
-                            return { state: 'running', startupLine: line }
+                            return { state: 'running', url: msg }
                         else {
                             log(`WARNING: expected state 'started' but found state '${prevState?.state}'`)
                             return prevState;
