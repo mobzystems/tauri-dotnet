@@ -34,13 +34,13 @@ export default function useBackendService(props: {
         log(`props.url is '${props.url}', current url is '${tryUrl.current}'`);
 
         // Helper function to sleep
-        const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+        // const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
         // Flag signalling process responded
         let startupLine: string | undefined;
         let exited: boolean;
 
         const onClose = (data: any) => {
-            log(`command finished with code ${data.code} and signal ${data.signal}`);
+            log(`command finished with code ${data.code} and signal ${data.signal}. State is ${serviceState?.state}`);
             setServiceState({ state: 'exited' });
             exited = true;
         };
@@ -51,6 +51,8 @@ export default function useBackendService(props: {
             log(`command stdout: "${line.trim()}"`);
             if (startupMessage.test(line)) {
                 startupLine = line;
+                log(`Found startup line '${line}'`);
+                setServiceState({ state: 'running', startupLine: line });
             }
         }
         const onStdErr = (line: string) => {
@@ -102,30 +104,31 @@ export default function useBackendService(props: {
                         setCommand(_command);
                         setProcess(_process);
 
-                        setServiceState({ state: 'started'});
+                        // setServiceState({ state: 'started'});
 
                         log(`process #${_process.pid} started`);
+                        return { state: 'started' };
 
-                        log(`waiting for startup message ${startupMessage}...`);
-                        for (let i = 1; i <= 10; i++) {
-                            if (startupLine !== undefined) {
-                                log(`message found (#${i})`);
-                                return { state: 'running', startupLine: startupLine };
-                            }
-                            if (exited)
-                                break;
-                            log(`try #${i}`);
-                            await sleep(500)
-                        }
+                        // log(`waiting for startup message ${startupMessage}...`);
+                        // for (let i = 1; i <= 10; i++) {
+                        //     if (startupLine !== undefined) {
+                        //         log(`message found (#${i})`);
+                        //         return { state: 'running', startupLine: startupLine };
+                        //     }
+                        //     if (exited)
+                        //         break;
+                        //     log(`try #${i}`);
+                        //     await sleep(500)
+                        // }
 
-                        // If the process has not responded, kill it
-                        if (exited) {
-                            setCommand(undefined);
-                            setProcess(undefined);
-                        } else
-                            await killProcessIfStarted(_command, _process);
-                        tryUrl.current = undefined;
-                        return { state: 'error' };
+                        // // If the process has not responded, kill it
+                        // if (exited) {
+                        //     setCommand(undefined);
+                        //     setProcess(undefined);
+                        // } else
+                        //     await killProcessIfStarted(_command, _process);
+                        // tryUrl.current = undefined;
+                        // return { state: 'error' };
 
                     }
                     catch (error: any) {
