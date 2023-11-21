@@ -5,10 +5,6 @@
     "devPath": "http://localhost:1420",
     "distDir": "../dist"
   },
-  "package": {
-    "productName": "tauri-dotnet",
-    "version": "0.0.0"
-  },
   "tauri": {
     "allowlist": {
       "all": false,

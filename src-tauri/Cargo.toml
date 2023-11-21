@@ -1,8 +1,8 @@
 [package]
 name = "tauri-dotnet"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+version = "0.2.0"
+description = "A Tauri App with a .NET Backend"
+authors = ["MOBZystems, Home of Tools"]
 license = ""
 repository = ""
 edition = "2021"
